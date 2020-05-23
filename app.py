@@ -2,6 +2,7 @@
 
 import os
 import logging
+import gpxpy
 from flask import Flask, flash, request, redirect, url_for
 from werkzeug.utils import secure_filename
 
@@ -12,6 +13,23 @@ app = Flask(__name__)
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def gpx2jsarray(gpxfile):
+    """Convert Track info from GPX file to Javasctipt array string"""
+    gpx = gpxpy.parse(gpxfile)
+    js_array = ''
+
+    for track in gpx.tracks:
+        for segment in track.segments:
+            previous_point = None
+            for point in segment.points:
+                time_difference = 0
+                if previous_point:
+                    time_difference = (point.time - previous_point.time).total_seconds() * 1000 # convert to milliseconds
+                js_array += '[{0}, {1}, {2}],\n'.format(point.latitude, point.longitude, round(time_difference))
+                previous_point = point
+    
+    return js_array
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -28,7 +46,8 @@ def upload_file():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             data = file.read()
-            logging.info('%s', data)
+            jsarray = gpx2jsarray(data.decode('utf-8'))
+            logging.info('jsarray: %s', jsarray)
             return ''
     return '''
     <!doctype html>
