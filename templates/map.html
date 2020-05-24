@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Map
+{% endblock %}
+
+{%block head %}
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey={{ yandex_maps_api_key }}" type="text/javascript"></script>
+<script type="text/javascript">
+    var track = [
+        {{ track_array }}
+    ];
+</script>
+<script src="{{ url_for('static', filename='track_animation.js') }}" type="text/javascript"></script>
+{% endblock %}
+
+{% block body %}
+<div id="map"></div>
+{% endblock %}
