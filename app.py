@@ -3,7 +3,7 @@
 import os
 import logging
 import gpxpy
-from flask import Flask, flash, request, redirect, url_for
+from flask import Flask, flash, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
 
 ALLOWED_EXTENSIONS = {'gpx'}
@@ -46,18 +46,9 @@ def upload_file():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             data = file.read()
-            jsarray = gpx2jsarray(data.decode('utf-8'))
-            logging.info('jsarray: %s', jsarray)
-            return ''
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-    '''
+            track_array = gpx2jsarray(data.decode('utf-8'))
+            return render_template('map.html', yandex_maps_api_key=os.environ['YANDEX_MAPS_API_KEY'], track_array=track_array)
+    return render_template('upload.html')
 
 
 logging.basicConfig(level=logging.DEBUG)
